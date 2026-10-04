@@ -886,6 +886,23 @@ Benchmark honesty:
 - SIMD speedups are strongest on dot/reduction-heavy workloads.
 - Use the included scripts on your target machine before making performance claims.
 
+### Recorded snapshots
+
+Snapshots are committed as evidence, not marketing. Re-run on your machine with `BENCH_PROFILE=large bun run bench`.
+
+**2026-10-04 — AMD Ryzen 5 5600 (12 threads), Bun 1.4.3, `BENCH_PROFILE=large` (warmup 2 · repeats 10), milliseconds, median:**
+
+| Kernel | median | Read |
+|---|---|---|
+| WASM dense dataset SIMD | 0.0608 | fastest path |
+| WASM graph dataset SIMD | 0.0963 | 3.0× over the scalar path |
+| WASM graph dataset scalar | 0.2884 | no-SIMD baseline |
+| TS loop | 3.21 | beats WASM loop at this size |
+| WASM dense batch SIMD | 3.77 | |
+| WASM loop | 6.54 | boundary cost dominates |
+
+Honest read: the SIMD dataset kernels are the win (4.7× over the scalar graph path). Per-element loops are still faster in TypeScript at this size — the JS/WASM call boundary costs more than the kernel saves. That matches the honesty notes above; the fix direction is batching across the boundary, not adding more kernels.
+
 Parent repository comparison benchmark:
 
 ```sh
